@@ -3,6 +3,7 @@ from typing import Any, Dict
 import threading
 from pathlib import Path
 import json
+import time
 
 class DataContext:
     """Main context manager that aggregates data sources."""
@@ -29,6 +30,25 @@ class DataContext:
             elif value is not None:
                 entries.append(f"{path.rsplit('/',1)[-1]} - {value}")
         return ". ".join(entries) + "." if entries else ""
+    
+    def create_help_request(self, question: str, customer_contact: str = "9999999999") -> str:
+        """Thread-safe method to create help requests in Firebase"""
+
+        # Request payload
+        request_data = {
+            "customerContact": customer_contact,
+            "question": question,
+            "status": "pending",
+            "createdAt": int(time.time()),
+            "timeoutAt": int(time.time()) + 86400,
+            "answer": None,
+            "supervisorId": None
+        }
+        additional_updates={
+                "helpRequests/status/{request_id}": "Pending"
+            }
+        return self.firebase.push_value("helpRequests/requests", request_data,additional_updates)
+        
 
     def close(self) -> None:
         """Clean up all resources."""

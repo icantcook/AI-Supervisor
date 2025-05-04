@@ -9,46 +9,6 @@ from pathlib import Path
 
 load_dotenv()
 
-# # Initialize the app with a service account, granting admin privileges
-# initialize_app(cred, {
-# 'databaseURL': 'https://your-database-name.firebaseio.com'
-# })
-
-# # Set data in the Realtime Database
-# ref = db.reference('users/user_id')
-# ref.set({
-# 'name': 'John Doe',
-# 'email': 'john.doe@example.com'
-# })
-
-# # Get data from the Realtime Database
-# snapshot = ref.get()
-# print(f'Data: {snapshot}')
-
-
-
-# def callback(event: Event):
-#     """Handle real-time database updates"""
-#     print(f"\nEvent type: {event.event_type}")
-#     print(f"Path: {event.path}")
-#     print(f"Data: {event.data}")
-    
-#     # Add your custom logic here
-#     if event.path == '/':
-#         print("Full data update:")
-#     elif 'name' in event.path:
-#         print("Name changed:")
-#     elif 'email' in event.path:
-#         print("Email changed:")
-
-# # Start listening for changes
-# try:
-#     print("Starting real-time listener...")
-#     ref.listen(callback)
-# finally:
-#     # Clean up Firebase connection
-#     db._database.close()
-
 
 class FirebaseContextManager():
     """Manages Firebase connection and context synchronization"""
@@ -94,6 +54,7 @@ class FirebaseContextManager():
             # Start listening for changes after initial load
             # self._listener = root_ref.listen(self._update_context)
 
+    #TODO: Handle real-time updates
     # def _update_context(self, event: Event) -> None:
     #     """Handle real-time updates and maintain context"""
     #     with self._lock:
@@ -115,6 +76,36 @@ class FirebaseContextManager():
     #                 current[keys[-1]] = event.data
     #         except KeyError:
     #             pass  # Handle potential race conditions
+
+    def push_value(self, base_path: str, data: Dict, additional_updates: Dict[str, Any] = None) -> str:
+        """
+        Atomically pushes data to Firebase with optional related updates
+        Returns generated request ID
+        """
+        with self._lock:
+            # Generate new push ID
+            new_ref = db.reference(base_path).push()
+            request_id = new_ref.key
+            
+            # Prepare base update
+            updates = {
+                f"{base_path}/{request_id}": data
+            }
+            
+            # Add formatted additional updates
+            if additional_updates:
+                formatted = {
+                    path.format(request_id=request_id): value
+                    for path, value in additional_updates.items()
+                }
+                updates.update(formatted)
+            
+            # Execute atomic multi-path update
+            db.reference('/').update(updates)
+            
+            return request_id
+        
+
 
     def get_value(self, path: str = "") -> Any:
         """Thread-safe access to specific context values"""

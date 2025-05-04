@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-
+import os
 from livekit import agents
 from livekit.agents import AgentSession, Agent,function_tool, RoomInputOptions, RunContext
 from livekit.plugins import (
@@ -14,20 +14,16 @@ from contexts.data_context import DataContext, get_instruction_set
 from tools.utils.tool_loader import load_tools_from_directory
 load_dotenv()
 
-
-
 class Assistant(Agent):
     def __init__(self) -> None:
 
         tools = load_tools_from_directory()
-        
-      
         data_context = DataContext()
-            
         # Get aggregated context
-        context_str = data_context.get_knowledge_base_context(['business_details'])
+        context_str = data_context.get_knowledge_base_context(['businessDetails','helpRequests'])
         data_context.close()  
 
+        # TODO: Implement realtime context update
         instructions=get_instruction_set() + " The next instruction set would contain historic user queries and the appropriate responses; you are to reuse them in your responses. " + context_str
         print(instructions)
         super().__init__(
@@ -41,12 +37,11 @@ async def entrypoint(ctx: agents.JobContext):
 
     session = AgentSession(
         stt=deepgram.STT(model="nova-3", language="multi"),
-        llm=openai.LLM(model="gpt-3.5-turbo"),
+        llm=openai.LLM(model="gpt-4o-mini"),
         tts=cartesia.TTS(),
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
     )
-
 
     await session.start(
         room=ctx.room,
@@ -65,4 +60,4 @@ async def entrypoint(ctx: agents.JobContext):
 
 
 if __name__ == "__main__":
-    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint))
+    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint,agent_name="Priya"))
