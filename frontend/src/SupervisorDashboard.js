@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import LiveKitWindow from './livekit';
 const SupervisorDashboard = () => {
     const [requests, setRequests] = useState({
         pending: [
@@ -23,6 +23,7 @@ const SupervisorDashboard = () => {
 
     const [newAnswer, setNewAnswer] = useState('');
     const [activeRequest, setActiveRequest] = useState(null);
+    const [livekitWindow, setLivekitWindow] = useState(false);
 
     const handleAnswerSubmit = (requestId, answer) => {
         const request = requests.pending.find(r => r.id === requestId);
@@ -46,7 +47,7 @@ const SupervisorDashboard = () => {
 
     const handleStartCall = () => {
         console.log("Starting new call...");
-        // Add actual call initiation logic here
+        setLivekitWindow(true);
     };
     return (
         <div style={{
@@ -150,7 +151,7 @@ const SupervisorDashboard = () => {
                 flexDirection: 'column',
                 gap: '20px'
             }}>
-                {/* Start Call Section (unchanged) */}
+                {livekitWindow ? <LiveKitWindow /> : null}
                 <div style={{
                     height: '25%',
                     backgroundColor: 'white',
