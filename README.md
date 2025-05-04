@@ -1,6 +1,5 @@
 # AI‑Supervisor
 
-## Dashboard
 ```bash
 cd frontend
 npm start
