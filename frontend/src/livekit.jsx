@@ -24,19 +24,22 @@ function LiveKitWindow() {
     }
 
     return (
-        <LiveKitRoom
-            serverUrl={serverUrl}
-            token={token}
-            connect={true}
-            video={false}
-            audio={true}
-            style={{ height: '5vh' }}
-        >
-            {/* <MediaDeviceSelect kind="audioinput" /> */}
+        <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '20px', height: '100%', backgroundColor: '#fff' }}>
+            <h4>LiveKit Call Window</h4>
+            <LiveKitRoom
+                serverUrl={serverUrl}
+                token={token}
+                connect={true}
+                video={false}
+                audio={true}
+                style={{ height: '5vh' }}
+            >
+                {/* <MediaDeviceSelect kind="audioinput" /> */}
 
-            <RoomAudioRenderer />
-            <ControlBar />
-        </LiveKitRoom>
+                <RoomAudioRenderer />
+                <ControlBar />
+            </LiveKitRoom>
+        </div>
     );
 
 }
